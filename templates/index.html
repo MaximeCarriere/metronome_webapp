@@ -1,29 +1,47 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Plotly Plot</title>
+    <title>Heart Simulator</title>
     <style>
         body {
             background-color: #111;
             color: #fff;
-            font-family: 'Segoe UI', sans-serif;
+            font-family: sans-serif;
             text-align: center;
-            padding: 20px;
+        }
+        input {
+            padding: 10px;
+            font-size: 1.2em;
+            margin: 10px;
         }
         .plot-container {
-            max-width: 800px;
-            margin: auto;
+            width: 90%;
+            margin: 20px auto;
             background: #222;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 0 25px rgba(255, 255, 255, 0.1);
         }
     </style>
 </head>
 <body>
-    <h1>Random Number Plot (Plotly)</h1>
-    <div class="plot-container">
-        {{ plot_div|safe }}
-    </div>
+    <h1>💓 Heart & HRV Simulator</h1>
+
+    <form method="POST">
+        <label for="age">Enter Age:</label>
+        <input type="number" name="age" id="age" min="1" max="120" required>
+        <input type="submit" value="Simulate">
+    </form>
+
+    {% if plot_hr %}
+        <div class="plot-container">
+            {{ plot_hr|safe }}
+        </div>
+    {% endif %}
+
+    {% if plot_hrv %}
+        <div class="plot-container">
+            {{ plot_hrv|safe }}
+        </div>
+    {% endif %}
 </body>
 </html>

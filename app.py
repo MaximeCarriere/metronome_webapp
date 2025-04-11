@@ -1,37 +1,50 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 import plotly.graph_objs as go
 import plotly.offline as pyo
 import random
-import os
+import numpy as np
 
 app = Flask(__name__)
 
-@app.route('/')
+def simulate_heart_data(age):
+    # Base ranges
+    hr_base = max(60, 220 - age)  # Approximate max HR for age
+    hrv_base = max(20, 120 - age)  # Rough guess: HRV declines with age
+
+    x = list(range(30))  # 30 seconds
+
+    # Simulate HR (bpm)
+    hr = [random.randint(hr_base - 10, hr_base + 10) for _ in x]
+
+    # Simulate HRV (ms)
+    hrv = [random.uniform(hrv_base - 10, hrv_base + 10) for _ in x]
+
+    return x, hr, hrv
+
+@app.route('/', methods=['GET', 'POST'])
+
 def index():
-    x_vals = list(range(10))
-    y_vals = [random.randint(0, 10) for _ in x_vals]
+    plot_hr = ''
+    plot_hrv = ''
 
-    trace = go.Scatter(
-        x=x_vals,
-        y=y_vals,
-        mode='lines+markers',
-        line=dict(width=2),
-        marker=dict(size=8),
-        name='Random Numbers'
-    )
+    if request.method == 'POST':
+        age = int(request.form['age'])
+        x, hr_data, hrv_data = simulate_heart_data(age)
 
-    layout = go.Layout(
-        title='Random Number Plot',
-        xaxis=dict(title='Index'),
-        yaxis=dict(title='Value'),
-        template='plotly_dark',
-        margin=dict(l=40, r=40, t=50, b=40)
-    )
+        # Heart Rate plot
+        fig_hr = go.Figure()
+        fig_hr.add_trace(go.Scatter(x=x, y=hr_data, mode='lines+markers', name='Heart Rate'))
+        fig_hr.update_layout(title='Simulated Heart Rate (bpm)', template='plotly_dark')
+        plot_hr = pyo.plot(fig_hr, output_type='div', include_plotlyjs=False)
 
-    fig = go.Figure(data=[trace], layout=layout)
-    plot_html = pyo.plot(fig, output_type='div', include_plotlyjs=True)
+        # HRV plot
+        fig_hrv = go.Figure()
+        fig_hrv.add_trace(go.Scatter(x=x, y=hrv_data, mode='lines+markers', name='HRV'))
+        fig_hrv.update_layout(title='Simulated HRV (ms)', template='plotly_dark')
+        plot_hrv = pyo.plot(fig_hrv, output_type='div', include_plotlyjs=False)
 
-    return render_template('index.html', plot_div=plot_html)
+    return render_template('index.html', plot_hr=plot_hr, plot_hrv=plot_hrv)
+
 
 
 if __name__ == '__main__':
